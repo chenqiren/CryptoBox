@@ -51,8 +51,8 @@ import javax.security.auth.x500.X500Principal;
  * Retrieve data:
  * 1. retrieve the encrypted user data and encrypted AES key from SharedPreferences.
  * 2. retrieve the RSA key from keystore.
- * 3. decrypt ASE key by using the RSA key.
- * 4. decrypt encrypted user data by using the decrypted ASE key.
+ * 3. decrypt AES key by using the RSA key.
+ * 4. decrypt encrypted user data by using the decrypted AES key.
  *
  * This class is used for api below 23.
  * See {@link SecureSharedPreferencesM} for api above 23.
@@ -60,7 +60,7 @@ import javax.security.auth.x500.X500Principal;
 public class SecureSharedPreferences extends AbstractSecureSharedPreferences {
 
     private static final String RSA_TRANSFORMATION =  "RSA/ECB/PKCS1Padding";
-    private static final String ASE_TRANSFORMATION = "AES/ECB/PKCS7Padding";
+    private static final String AES_TRANSFORMATION = "AES/ECB/PKCS7Padding";
 
     public SecureSharedPreferences(Context context) throws
             NoSuchAlgorithmException,
@@ -135,12 +135,12 @@ public class SecureSharedPreferences extends AbstractSecureSharedPreferences {
             BadPaddingException,
             IllegalBlockSizeException,
             InvalidAlgorithmParameterException {
-        Key aseKey = new SecretKeySpec(generateASEKey(), "ASE");
-        Cipher cipher = Cipher.getInstance(ASE_TRANSFORMATION, "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, aseKey);
+        Key aesKey = new SecretKeySpec(generateAESKey(), "AES");
+        Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION, "BC");
+        cipher.init(Cipher.ENCRYPT_MODE, aesKey);
 
         byte[] encodedBytes = cipher.doFinal(input.getBytes());
-        byte[] encodedKey = encryptKey(ALIAS, aseKey.getEncoded());
+        byte[] encodedKey = encryptKey(ALIAS, aesKey.getEncoded());
 
         return new EncryptedData(
                 Base64.encodeToString(encodedBytes, Base64.DEFAULT),
@@ -158,9 +158,9 @@ public class SecureSharedPreferences extends AbstractSecureSharedPreferences {
             BadPaddingException,
             IllegalBlockSizeException {
         byte[] decryptedKey = decryptKey(alias, encryptedData.encryptedKey);
-        Key aseKey = new SecretKeySpec(decryptedKey, "ASE");
-        Cipher cipher = Cipher.getInstance(ASE_TRANSFORMATION, "AndroidOpenSSL");
-        cipher.init(Cipher.DECRYPT_MODE, aseKey);
+        Key aesKey = new SecretKeySpec(decryptedKey, "AES");
+        Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION, "AndroidOpenSSL");
+        cipher.init(Cipher.DECRYPT_MODE, aesKey);
 
         byte[] encryptedBytes = Base64.decode(encryptedData.encryptedData, Base64.DEFAULT);
         byte[] decodedBytes = cipher.doFinal(encryptedBytes);
@@ -168,7 +168,7 @@ public class SecureSharedPreferences extends AbstractSecureSharedPreferences {
     }
 
     /**
-     * This is used to encrypt the ASE key we used to encrypt data.
+     * This is used to encrypt the AES key we used to encrypt data.
      * We save the encrypted key into SharePreferences.
      */
     private byte[] encryptKey(String alias, byte[] secretKey) throws
@@ -189,7 +189,7 @@ public class SecureSharedPreferences extends AbstractSecureSharedPreferences {
     }
 
     /**
-     * Decrypt the encrypted ASE key.
+     * Decrypt the encrypted AES key.
      */
     private byte[] decryptKey(String alias, String encryptedKey) throws
             UnrecoverableEntryException,
@@ -220,12 +220,12 @@ public class SecureSharedPreferences extends AbstractSecureSharedPreferences {
         return bytes;
     }
 
-    private byte[] generateASEKey() {
-        byte[] ASEkey = new byte[16];
+    private byte[] generateAESKey() {
+        byte[] AESkey = new byte[16];
         SecureRandom secureRandom = new SecureRandom();
-        secureRandom.nextBytes(ASEkey);
+        secureRandom.nextBytes(AESkey);
 
-        return ASEkey;
+        return AESkey;
     }
 
     /**
