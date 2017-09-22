@@ -1,8 +1,9 @@
 # SecureSharedPreferences
 
 SecureSharedPreferences provides a way to store user data securely on Android.
-Storing username/password/token in SharedPreferences is not secure. SecureSharedPreferences encrypts the data before storing it
-into SharedPreferences and decrypts the encrypted user's data when retrieving it back. 
+Storing username/password/token directly in SharedPreferences is not secure.
+SecureSharedPreferences encrypts the data before storing it into SharedPreferences and decrypts the encrypted user's data when retrieving it back. So that SecureSharedPreferences provides more protection to sensitive data. 
+
 
 SecureSharedPreferences is based on KeyStore and SharedPreferences.
     
@@ -16,7 +17,7 @@ KeyStore provides two functions:
 1.  Randomly generates keys
 2.  Securely stores the keys
 
-## The general flow is:
+## The general work flow is:
 1.  When you want to store a secrete, retrieve the key from KeyStore, encrypt the data with it, and then store the encrypted data in SharedPreferences.
 2.  When you retrieve the secret, read the encrypted data from SharedPreferences, get the key from KeyStore and then use the key to decrypt the data.
 
